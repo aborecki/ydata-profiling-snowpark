@@ -3,11 +3,11 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ydata-profiling"
+name = "ydata-profiling-snowpark"
 authors = [
-    {name = "YData Labs Inc", email = "opensource@ydata.ai"},
+    {name = "Artur Labs Inc", email = "artur.borecki@gmail.com"},
 ]
-description="Generate profile report for pandas DataFrame"
+description="Generate profile report for pandas DataFrame in Snowpark"
 readme = "README.md"
 requires-python=">=3.7, <3.13"
 keywords=["pandas", "data-science", "data-analysis", "python", "jupyter", "ipython"]
@@ -132,4 +132,4 @@ ydata_profiling = "ydata_profiling.controller.console:main"
 pandas_profiling = "ydata_profiling.controller.console:main"
 
 [project.urls]
-homepage = "https://github.com/ydataai/ydata-profiling"
+homepage = "https://github.com/ydataai/ydata-profiling-snowpark"
