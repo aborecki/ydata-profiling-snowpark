@@ -2,7 +2,8 @@ import copy
 import json
 import warnings
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Optional, Union, TypeVar
+
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -11,13 +12,11 @@ with warnings.catch_warnings():
 try:
     from pyspark.sql import DataFrame as sparkDataFrame
 except:  # noqa: E722
-    from typing import TypeVar
     sparkDataFrame = TypeVar("sparkDataFrame")  # type: ignore
     
 try:
     from snowflake.snowpark import DataFrame as snowparkDataFrame
 except:  # noqa: E722
-    from typing import TypeVar
     snowparkDataFrame = TypeVar("snowparkDataFrame")  # 
 
 

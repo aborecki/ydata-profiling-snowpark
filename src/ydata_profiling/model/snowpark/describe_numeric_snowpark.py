@@ -4,6 +4,7 @@ import numpy as np
 import snowflake.snowpark.functions as F
 
 from snowflake.snowpark import DataFrame
+import logging
 
 from ydata_profiling.config import Settings
 from ydata_profiling.model.summary_algorithms import (
@@ -12,20 +13,55 @@ from ydata_profiling.model.summary_algorithms import (
 )
 
 
+from numpy import array
+
+
+
 def numeric_stats_spark(df: DataFrame, summary: dict) -> dict:
     column = df.columns[0]
 
+    print("Column:"+str(column))
+
     expr = [
+
+        F.min(F.col(column)).alias("min"),
+        F.max(F.col(column)).alias("max")
+    ]
+
+    expr_overflow = [
         F.mean(F.col(column)).alias("mean"),
         F.stddev(F.col(column)).alias("std"),
         F.variance(F.col(column)).alias("variance"),
-        F.min(F.col(column)).alias("min"),
-        F.max(F.col(column)).alias("max"),
         F.kurtosis(F.col(column)).alias("kurtosis"),
         F.skew(F.col(column)).alias("skewness"),
-        F.sum(F.col(column)).alias("sum"),
+        F.sum(F.col(column)).alias("sum")
     ]
-    return df.agg(*expr).first().asDict()
+
+    try:
+        #try all
+        ret= df.agg(*(expr+expr_overflow) ).first().asDict()
+    except Exception as exc:
+        print(f"Error calculating: {exc}")
+        print("trying one by one....")
+
+    ret={
+        "MEAN":None,
+        "STD":None,
+        "VARIANCE":None,
+        "KURTOSIS":None,
+        "SKEWNESS":None,
+        "SUM":None
+    }
+    for e in expr_overflow:
+        try:
+            ret=ret | df.agg(e).first().asDict() 
+        except Exception as exc:
+            print(f"Error calculating {e}: {exc}")
+            
+    
+    ret= df.agg(*expr).first().asDict() | ret
+    print(ret)
+    return ret
 
 
 @describe_numeric_1d.register
@@ -112,7 +148,7 @@ def describe_numeric_1d_spark(
     summary["p_negative"] = summary["n_negative"] / summary["n"]
     summary["range"] = summary["max"] - summary["min"]
     summary["iqr"] = summary["75%"] - summary["25%"]
-    summary["cv"] = summary["std"] / float(summary["mean"]) if summary["mean"] else np.NaN
+    summary["cv"] = float(summary["std"]) / float(summary["mean"]) if summary["mean"] and summary["std"] else np.NaN
     summary["p_zeros"] = summary["n_zeros"] / summary["n"]
     summary["p_infinite"] = summary["n_infinite"] / summary["n"]
 
@@ -126,16 +162,49 @@ def describe_numeric_1d_spark(
     # This might be confusing if there are a lot of values of equal magnitude, but we cannot bring all the values to
     # display in pandas display
     # the alternative is to do this in spark natively, but it is not trivial
-    infinity_values = [np.inf, -np.inf]
-    infinity_index = summary["value_counts_without_nan"].index.isin(infinity_values)
+    # infinity_values = [np.inf, -np.inf]
+    # infinity_index = summary["value_counts_without_nan"].index.isin(infinity_values)
 
-    summary.update(
-        histogram_compute(
-            config,
-            summary["value_counts_without_nan"][~infinity_index].index.values,
-            summary["n_distinct"],
-            weights=summary["value_counts_without_nan"][~infinity_index].values,
+    # summary.update(
+    #     histogram_compute(
+    #         config,
+    #         summary["value_counts_without_nan"][~infinity_index].index.values,
+    #         summary["n_distinct"],
+    #         weights=summary["value_counts_without_nan"][~infinity_index].values,
+    #     )
+    # )
+
+
+    # Get the number of bins
+    col_name = df.columns[0]
+    bins = config.plot.histogram.bins
+    bins_arg = 10 if bins == 0 else min(bins, summary["n_distinct"])
+
+    print("Bins"+str(bins_arg))
+
+
+    df_hist = (
+            df.withColumn("hist_bin", F.sql_expr(f"""
+                        width_bucket( {col_name}, min({col_name}) over (partition by null), max({col_name}) over (partition by null)+0.01,{bins_arg}) """))
+            .group_by("hist_bin")
+            .count()
+            .sort("hist_bin")
         )
-    )
+    rows = df_hist.collect()
+    print("Rows"+str(rows))
+    hist_counts = [0] * bins_arg
+    for idx, r in enumerate(rows):
+        if r["HIST_BIN"] and r["HIST_BIN"] <= bins_arg:
+            hist_counts[r["HIST_BIN"]-1] = r["COUNT"]
+
+    if summary["max"]:
+        step = (summary["max"] - summary["min"]) / bins_arg
+        bin_edges = [summary["min"] + i * step for i in range(bins_arg + 1)]
+    else:
+        bin_edges=[0] * bins_arg
+
+    summary["histogram"] = (array(hist_counts), array(bin_edges))
+
+    print(f"Summary histogram:"+str(summary["histogram"]))
 
     return config, df, summary

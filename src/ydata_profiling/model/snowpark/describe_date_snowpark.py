@@ -55,6 +55,12 @@ def describe_date_1d_spark(
     print("Bins"+str(bins_arg))
 
 
+    def get_timestamp(d):
+        if isinstance(d, datetime.datetime):
+            return d.timestamp()
+        else:
+            return int(datetime.datetime.combine(d, datetime.time()).timestamp())
+
     df_hist = (
             df.withColumn("hist_bin", F.sql_expr(f"""
                         width_bucket( {col_name}, min({col_name}) over (partition by null), max({col_name}+1) over (partition by null),{bins_arg}) """))
@@ -71,7 +77,7 @@ def describe_date_1d_spark(
 
     if summary["max"]:
         step = (summary["max"] - summary["min"]) / bins_arg
-        bin_edges = [datetime.datetime.combine(summary["min"] + i * step, datetime.time()).timestamp() for i in range(bins_arg + 1)]
+        bin_edges = [get_timestamp(summary["min"] + i * step) for i in range(bins_arg + 1)]
     else:
         bin_edges=[0] * bins_arg
 

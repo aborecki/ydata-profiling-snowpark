@@ -62,6 +62,7 @@ def spark_describe_1d(
             "StringType": "Categorical",
             "ArrayType": "Categorical",
             "boolean": "Boolean",
+            "BooleanType": "Boolean",
             "date": "DateTime",
             "DateType": "DateTime",
             "timestamp": "DateTime",
