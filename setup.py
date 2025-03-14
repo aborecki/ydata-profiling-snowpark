@@ -10,7 +10,7 @@ with (source_root / "README.md").open(encoding="utf-8") as f:
 try:
     version = (source_root / "VERSION").read_text().rstrip("\n")
 except FileNotFoundError:
-    version = "0.0.5"
+    version = "0.0.6"
 
 with open(source_root / "src/ydata_profiling/version.py", "w") as version_file:
     version_file.write(f"__version__ = '{version}'")

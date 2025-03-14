@@ -129,9 +129,9 @@ class ProfileReport(SerializeReport, ExpectationsReport):
         else:
             if isinstance(df, pd.DataFrame):
                 report_config = Settings()
-            elif isinstance(df, sparkDataFrame):
+            elif not isinstance(sparkDataFrame, TypeVar) and isinstance(df, sparkDataFrame):
                 report_config = SparkSettings()
-            elif isinstance(df, snowparkDataFrame):
+            elif not isinstance(snowparkDataFrame, TypeVar) and isinstance(df, snowparkDataFrame):
                 report_config = SnowparkSettings()
 
         groups = [
