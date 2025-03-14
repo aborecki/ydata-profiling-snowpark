@@ -1,3 +1,25 @@
+
+from snowflake.snowpark import Session
+from ydata_profiling import ProfileReport
+
+connection_parameters = {
+   "account": "xxxx",
+   "user": "xxxx",
+   "role":"x",
+   "database":"x",
+   "schema":"x",
+   "warehouse":"x",
+   "authenticator":"externalbrowser"
+}
+session = Session.builder.configs(connection_parameters).create()
+
+
+df=session.sql("select * from MY_DB.MY_SCHEMA.MY_TABLE")
+
+profile = ProfileReport(df, title="Profiling Report")
+
+profile.to_file("profiling_report.html")
+
 # ydata-profiling
 
 [![Build Status](https://github.com/ydataai/pandas-profiling/actions/workflows/tests.yml/badge.svg?branch=master)](https://github.com/ydataai/pandas-profiling/actions/workflows/tests.yml)
