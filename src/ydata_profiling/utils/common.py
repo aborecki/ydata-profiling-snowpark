@@ -108,7 +108,7 @@ def analytics_features(
 
     if (
         bool(os.getenv("YDATA_PROFILING_NO_ANALYTICS")) is not True
-        and package_version != "0.0.3"
+        and package_version != "0.0.4"
     ):
         try:
             subprocess.check_output("nvidia-smi")
