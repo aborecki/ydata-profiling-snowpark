@@ -49,5 +49,6 @@ def describe_date_1d_spark(
     # Run the histogram
     bin_edges, hist = df.select(col_name).rdd.flatMap(lambda x: x).histogram(bins_arg)
 
+    
     summary.update({"histogram": (array(hist), array(bin_edges))})
     return config, df, summary

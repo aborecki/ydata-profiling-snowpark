@@ -64,12 +64,12 @@ def render_date(config: Settings, summary: Dict[str, Any]) -> Dict[str, Any]:
             {"name": "Maximum", "value": fmt(summary["max"]), "alert": False},
             {
                 "name": "Invalid dates",
-                "value": fmt(summary["n_invalid_dates"]),
+                "value": fmt(summary["n_invalid_dates"]) if "n_invalid_dates" in summary else "N/A",
                 "alert": False,
             },
             {
                 "name": "Invalid dates (%)",
-                "value": fmt_percent(summary["p_invalid_dates"]),
+                "value": fmt_percent(summary["p_invalid_dates"]) if "p_invalid_dates" in summary else "N/A", 
                 "alert": False,
             },
         ],

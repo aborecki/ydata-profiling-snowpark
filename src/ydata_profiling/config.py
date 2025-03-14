@@ -407,6 +407,12 @@ class SparkSettings(Settings):
     samples.random = 0
 
 
+class SnowparkSettings(SparkSettings):
+     correlations: Dict[str, Correlation] = {
+        #"spearman": Correlation(key="spearman", calculate=True), # not supported in snowpark as for now
+        "pearson": Correlation(key="pearson", calculate=True),
+    }
+
 class Config:
     arg_groups: Dict[str, Any] = {
         "sensitive": {

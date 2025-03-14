@@ -29,7 +29,7 @@ from tqdm.auto import tqdm
 from typeguard import typechecked
 from visions import VisionsTypeset
 
-from ydata_profiling.config import Config, Settings, SparkSettings, SnowparkSettings
+from ydata_profiling.config import Config, Settings, SparkSettings
 from ydata_profiling.expectations_report import ExpectationsReport
 from ydata_profiling.model import BaseDescription
 from ydata_profiling.model.alerts import AlertType
@@ -57,10 +57,10 @@ logger = ProfilingLogger(name="ReportLogger")
 
 #For both snowpark and pyspark DF
 def is_empty(df):
-    if isinstance(df, snowparkDataFrame):
-        return df.first() is None
+	if hasattr(df,"empty"):
+    	return not df.empty
     else:
-        return df.rdd.isEmpty()
+    	return df.rdd.isEmpty()
     	
 @typechecked
 class ProfileReport(SerializeReport, ExpectationsReport):
@@ -129,10 +129,8 @@ class ProfileReport(SerializeReport, ExpectationsReport):
         else:
             if isinstance(df, pd.DataFrame):
                 report_config = Settings()
-            elif isinstance(df, sparkDataFrame):
+            else:
                 report_config = SparkSettings()
-            elif isinstance(df, snowparkDataFrame):
-                report_config = SnowparkSettings()
 
         groups = [
             (explorative, "explorative"),
@@ -209,8 +207,8 @@ class ProfileReport(SerializeReport, ExpectationsReport):
 
     @staticmethod
     def __initialize_dataframe(
-        df: Optional[Union[pd.DataFrame, sparkDataFrame, snowparkDataFrame]], report_config: Settings
-    ) -> Optional[Union[pd.DataFrame, sparkDataFrame, snowparkDataFrame]]:
+        df: Optional[Union[pd.DataFrame, sDataFrame]], report_config: Settings
+    ) -> Optional[Union[pd.DataFrame, sDataFrame]]:
 
         logger.info_def_report(
             df=df,
@@ -228,6 +226,7 @@ class ProfileReport(SerializeReport, ExpectationsReport):
                 df.index.name = None
             else:
                 df = df.sort_index()
+
         return df
 
     def invalidate_cache(self, subset: Optional[str] = None) -> None:

@@ -20,6 +20,10 @@ spec = importlib.util.find_spec("pyspark")
 if spec is not None:
     import ydata_profiling.model.spark  # isort:skip  # noqa
 
+spec = importlib.util.find_spec("snowflake.snowpark")
+if spec is not None:
+    import ydata_profiling.model.snowpark  # isort:skip  # noqa
+
 spec_numba = importlib.util.find_spec("numba")
 if spec_numba is not None:
     from numba.core.errors import NumbaDeprecationWarning  # isort:skip # noqa
