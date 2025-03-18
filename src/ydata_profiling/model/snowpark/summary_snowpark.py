@@ -58,6 +58,7 @@ def spark_describe_1d(
             "LongType": "Numeric",
             "double": "Numeric",
             "DoubleType": "Numeric",
+            "DecimalType": "Numeric",
             "string": "Categorical",
             "StringType": "Categorical",
             "ArrayType": "Categorical",
