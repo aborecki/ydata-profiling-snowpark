@@ -146,8 +146,8 @@ def describe_numeric_1d_spark(
 
     # FIXME: move to fmt
     summary["p_negative"] = summary["n_negative"] / summary["n"]
-    summary["range"] = summary["max"] - summary["min"]
-    summary["iqr"] = summary["75%"] - summary["25%"]
+    summary["range"] = summary["max"] - summary["min"] if summary["max"] and summary["min"] else np.nan
+    summary["iqr"] = summary["75%"] - summary["25%"] if summary["75%"] and summary["25%"] else np.nan
     summary["cv"] = float(summary["std"]) / float(summary["mean"]) if summary["mean"] and summary["std"] else np.nan
     summary["p_zeros"] = summary["n_zeros"] / summary["n"]
     summary["p_infinite"] = summary["n_infinite"] / summary["n"]
